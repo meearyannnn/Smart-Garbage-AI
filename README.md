@@ -1,16 +1,26 @@
-🧙‍♂️ IMMUNDUS AI – SYSTEM ARCHITECTURE
-🌐 FRONTEND PART (React / Next / Vanilla JS UI)
+🧙‍♂️ IMMUNDUS AI – COMPLETE SYSTEM ARCHITECTURE
+
+You have two intelligent pipelines:
+
+1️⃣ YOLO + CNN → Single Object Mode
+2️⃣ YOLO + YOLO (Dual YOLO) → Garbage Pile Mode
+
+Both serve different real-world scenarios.
+
+🌐 FRONTEND ARCHITECTURE (Presentation Ready)
 🔹 What Frontend Does
 
-Your frontend:
+The frontend acts as the user interaction layer.
 
-Uploads image
+It:
 
-Shows live camera feed
+Uploads image (Upload Relic)
 
-Sends image to backend
+Captures webcam feed (Live Scrying)
 
-Receives JSON response
+Sends image to backend via POST API
+
+Receives structured JSON
 
 Displays:
 
@@ -18,32 +28,30 @@ Annotated image
 
 Detected class
 
-Confidence
+Confidence score
+
+Model used
 
 Bounding boxes
 
-Total objects
+Total object count
 
-Saves detection with location
+Saves detection with GPS location
 
-Updates dashboard stats
+Updates dashboard analytics
 
-🔹 Frontend Flow (Explain Like This in Viva)
+🔹 Frontend Flow (Say This Exactly)
 
-“The frontend acts as a user interaction layer. It allows image upload or live webcam capture. The image is sent via HTTP POST request to the backend inference API. The response is rendered dynamically, including annotated image, detected waste class, confidence score, and object count.”
+“The frontend provides image upload and live camera capture functionality. The image is sent via HTTP POST to the backend inference API. The backend processes the image using either YOLO+CNN or Dual YOLO pipeline and returns a structured JSON response. The frontend then dynamically renders the annotated image and detection statistics.”
 
-🔹 Main Frontend Components
+🔹 Main Frontend Pages
 1️⃣ Detection Page
 
-Upload relic
+User chooses:
 
-Live Scrying (Webcam)
+🟡 Single Object → YOLO + CNN
 
-Choose:
-
-Single Object (YOLO + CNN)
-
-Garbage Pile (Dual YOLO)
+🟡 Garbage Pile → YOLO + YOLO
 
 2️⃣ Results Page
 
@@ -57,7 +65,7 @@ Model Used
 
 Bounding Boxes
 
-Total Objects
+Object Count
 
 3️⃣ Dashboard Page
 
@@ -65,135 +73,214 @@ Shows:
 
 Total detections
 
-Most common class
+Most frequent class
 
-Avg confidence
+Average confidence
 
 Heatmap (Leaflet + OpenStreetMap)
 
-Donut chart distribution
+Class distribution donut chart
 
 4️⃣ Guide Page
 
-Shows:
-
-Waste category
+Waste category info
 
 Disposal instructions
 
-Eco XP game
+Eco XP gamification
 
-🔹 Technologies Used (Say This Clearly)
+🔹 Technologies Used
 
 HTML / CSS / JS
 
-Fetch API / Axios
+Fetch API
 
-Leaflet.js (for heatmap)
+Leaflet.js
 
-Chart.js (for distribution graph)
+Chart.js
 
 Geolocation API
 
-Camera API (navigator.mediaDevices)
+navigator.mediaDevices (Camera API)
 
-⚙️ BACKEND PART (Python + OpenCV + YOLO)
+⚙️ BACKEND ARCHITECTURE
 
-Now coming to your backend inference code.
+Backend built using:
 
-You have TWO pipelines:
+Python
 
-🧠 1️⃣ YOLO + CNN PIPELINE
+OpenCV
+
+YOLO
+
+Custom CNN
+
+REST API
+
+You implemented two pipelines.
+
+🧠 PIPELINE 1: YOLO + CNN (Single Object Mode)
+🔹 When Used?
+
+When user uploads a single object image.
+
+Example from your screenshot:
+Detected: Cardboard – 95.6% confidence
+
+🔹 Step-by-Step Internal Flow
 
 Function:
 
 run_yolo_cnn(image_path)
 
-🔹 What Happens Internally
+Step 1 – Image Load
 
-Load image using OpenCV
+OpenCV loads image.
 
-YOLO detects bounding boxes
+Step 2 – YOLO Detection
 
-CNN reclassifies cropped objects
+YOLO detects:
 
-Draw detections
+Bounding box
 
-Save annotated image
+Objectness score
 
-Return JSON
+Initial class prediction
 
-🔹 JSON Response Structure
+Example:
+
+YOLO → food (0.72)
+
+Step 3 – Crop Object
+
+Detected region is cropped using bounding box.
+
+Step 4 – CNN Reclassification
+
+Cropped object sent to custom CNN classifier.
+
+CNN outputs refined class.
+
+Example:
+
+CNN → Cardboard (0.956)
+
+
+CNN overrides YOLO class if more confident.
+
+Step 5 – Draw Final Detection
+
+Bounding box drawn
+
+Label from CNN used
+
+Confidence updated
+
+Step 6 – Return JSON
 {
   "pipeline": "yolo_cnn",
-  "output_image": "path.jpg",
   "detections": [
     {
-      "label": "Organic",
-      "confidence": 0.657,
+      "label": "Cardboard",
+      "confidence": 0.956,
       "bbox": [x1, y1, x2, y2],
-      "yolo_class": "food",
-      "yolo_conf": 0.72,
-      "source": "CNN",
-      "area": 12345
+      "source": "CNN"
     }
   ],
   "total_objects": 1
 }
 
-🔹 Why YOLO + CNN?
+🔹 WHY YOLO + CNN?
 
-Say this in viva:
+Say this clearly:
 
-“YOLO is excellent for fast object detection but sometimes struggles in fine-grained classification. So we added a CNN classifier to refine classification after detection. This improves overall classification accuracy.”
+“YOLO performs fast object detection, but CNN performs more fine-grained classification. Therefore, YOLO localizes the object and CNN improves classification accuracy.”
 
-🔥 2️⃣ DUAL YOLO PIPELINE
+🔹 Why This Is Powerful
+
+Reduces classification errors
+
+Improves fine-grained discrimination
+
+Especially useful for visually similar materials
+
+🔥 PIPELINE 2: YOLO + YOLO (Dual YOLO) – Garbage Pile Mode
+
+Now from your cardboard pile image.
+
+We see multiple bounding boxes detected.
+
+🔹 When Used?
+
+For:
+
+Garbage pile
+
+Multiple overlapping objects
+
+Complex scenes
+
+🔹 Step-by-Step Flow
 
 Function:
 
 run_dual_yolo(image_path)
 
+Step 1 – First YOLO Detection
 
-Used for:
+YOLO detects all potential objects.
 
-Garbage piles
+In your image:
+Multiple "CARDBOARD" boxes detected.
 
-Multiple overlapping objects
+Step 2 – Second YOLO Refinement
 
-Large-scale detection
+Second YOLO model:
 
-🔹 What Happens
+Refines classification
 
-First YOLO detects objects
+Filters false positives
 
-Second YOLO refines classification or filters
+Improves robustness in clutter
 
-Bounding boxes drawn
+Step 3 – Non-Maximum Suppression
 
-JSON returned
+Overlapping boxes removed.
 
-🔹 Why Dual YOLO?
+Highest confidence retained.
 
-“Dual YOLO improves detection in cluttered environments by refining predictions in a second stage, increasing robustness for garbage pile scenarios.”
+Step 4 – Final Annotated Output
 
-🔄 COMPLETE SYSTEM FLOW
+Multiple bounding boxes drawn.
 
-Say this confidently:
+Example from your image:
 
-User uploads image
+Cardboard 85.1%
 
-Frontend sends image via POST request
+Cardboard 76.4%
 
-Backend stores image
+Cardboard 59.4%
 
-Backend runs inference
+etc.
 
-Annotated image saved
+Step 5 – Return JSON
+{
+  "pipeline": "dual_yolo",
+  "detections": [...],
+  "total_objects": 8
+}
 
-JSON returned
+🔹 WHY Dual YOLO?
 
-Frontend displays results
+Say confidently:
 
-Detection stored in DB
+“In cluttered environments, single-stage detection may produce noisy predictions. The second YOLO acts as a refinement stage, improving detection stability and reducing false positives.”
 
-Dashboard updates
+🧠 DIFFERENCE BETWEEN BOTH PIPELINES
+Feature	YOLO + CNN	YOLO + YOLO
+Use Case	Single Object	Garbage Pile
+Focus	Classification refinement	Multi-object robustness
+Cropping	Yes	No
+Second Model	CNN classifier	Another YOLO detector
+Speed	Slightly slower	Still real-time
+Accuracy	High class precision	High detection robustness
