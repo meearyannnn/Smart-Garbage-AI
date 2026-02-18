@@ -1,0 +1,29 @@
+# Virtual environment
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Model weights
+*.pt
+models/
+
+# Dataset
+data/
+litter_detection/
+waste_detection/
+waste_object_dataset/
+yolo_garbage/
+yolo_garbage_pile/
+
+# Outputs
+results.csv
+detected_*.jpg
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
