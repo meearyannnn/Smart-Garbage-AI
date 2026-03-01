@@ -1,286 +1,184 @@
-🧙‍♂️ IMMUNDUS AI – COMPLETE SYSTEM ARCHITECTURE
 
-You have two intelligent pipelines:
+# Smart Garbage AI 🗑️🤖
 
-1️⃣ YOLO + CNN → Single Object Mode
-2️⃣ YOLO + YOLO (Dual YOLO) → Garbage Pile Mode
+A full‑stack waste‑detection & classification system built with  
+**YOLO, CNNs, React/Vite frontend and a Python backend**.  
+Designed for accurate object detection, fine‑grained classification and realtime dashboards.
 
-Both serve different real-world scenarios.
+---
 
-🌐 FRONTEND ARCHITECTURE (Presentation Ready)
-🔹 What Frontend Does
+## 🚀 Project Overview
 
-The frontend acts as the user interaction layer.
+- **Frontend** – React/Vite UI (with Tailwind): image upload, live webcam capture, results, dashboard and guide.
+- **Backend** – Python/Flask API performing inference with two pipelines (YOLO + CNN and dual‑YOLO).  
+  Images stored, detections saved to database, JSON returned.
+- **Models** – Multiple YOLO weights and a custom CNN classifier for waste categories.
+- **Data** – Structured dataset with `train/val/test` partitions and Roboflow‑style YAMLs.
+- **Classifier utilities** – Training/inference scripts under classifier.
+- **Inference engines** – inference contains dispatchers and runners for both pipelines.
+- **Dashboards & storage** – Frontend heatmaps, charts and location logging.  
+- **Evaluation notebooks** – Jupyter scripts in notebooks for data preparation and analysis.
 
-It:
+---
 
-Uploads image (Upload Relic)
+## 🗂️ Repository Structure
 
-Captures webcam feed (Live Scrying)
+```
+/
+├── backend/                # Flask app + inference logic + DB models
+│   ├── app.py
+│   ├── database.py
+│   ├── models.py
+│   └── inference/          # runners & dispatcher
+├── classifier/             # training & inference for CNN and dual‑YOLO
+├── data/                   # raw & clean images, annotations, splits
+├── frontend/               # React/Vite SPA
+├── models/                 # pretrained weight files
+├── notebooks/              # Jupyter support scripts
+├── yolo*/                  # dataset folders for various experiments
+├── requirements.txt        # backend dependencies
+└── README.md               # ← you are here
+```
 
-Sends image to backend via POST API
+---
 
-Receives structured JSON
+## 🔧 Setup & Installation
 
-Displays:
+### Python (backend & classifier)
 
-Annotated image
+```bash
+cd "c:\Users\abhin\Desktop\smart garbage ai"
+python -m venv .venv
+& .\.venv\Scripts\Activate.ps1        # Windows PowerShell
+pip install -r requirements.txt
+```
 
-Detected class
+- requirements.txt contains Flask, OpenCV, ultralytics, SQLAlchemy, etc.
+- Model weights (`.pt` files) are tracked in models and root.
 
-Confidence score
+### Frontend
 
-Model used
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-Bounding boxes
+- Uses Vite + React + Tailwind CSS.
+- Entrypoint: `src/App.tsx`.
 
-Total object count
+### Database
 
-Saves detection with GPS location
+Default uses SQLite (see database.py); migrations handled manually.
 
-Updates dashboard analytics
+---
 
-🔹 Frontend Flow (Say This Exactly)
+## 🖼️ Inference Pipelines
 
-“The frontend provides image upload and live camera capture functionality. The image is sent via HTTP POST to the backend inference API. The backend processes the image using either YOLO+CNN or Dual YOLO pipeline and returns a structured JSON response. The frontend then dynamically renders the annotated image and detection statistics.”
+### 1. YOLO + CNN  
+Used for single‑object or standard images.
 
-🔹 Main Frontend Pages
-1️⃣ Detection Page
+- `run_yolo_cnn(image_path)`  
+  1. Load via OpenCV  
+  2. YOLO detects bounding boxes  
+  3. Crop & classify each box with CNN  
+  4. Draw annotations, save image  
+  5. Return JSON:
 
-User chooses:
-
-🟡 Single Object → YOLO + CNN
-
-🟡 Garbage Pile → YOLO + YOLO
-
-2️⃣ Results Page
-
-Shows:
-
-Detected Class
-
-Confidence %
-
-Model Used
-
-Bounding Boxes
-
-Object Count
-
-3️⃣ Dashboard Page
-
-Shows:
-
-Total detections
-
-Most frequent class
-
-Average confidence
-
-Heatmap (Leaflet + OpenStreetMap)
-
-Class distribution donut chart
-
-4️⃣ Guide Page
-
-Waste category info
-
-Disposal instructions
-
-Eco XP gamification
-
-🔹 Technologies Used
-
-HTML / CSS / JS
-
-Fetch API
-
-Leaflet.js
-
-Chart.js
-
-Geolocation API
-
-navigator.mediaDevices (Camera API)
-
-⚙️ BACKEND ARCHITECTURE
-
-Backend built using:
-
-Python
-
-OpenCV
-
-YOLO
-
-Custom CNN
-
-REST API
-
-You implemented two pipelines.
-
-🧠 PIPELINE 1: YOLO + CNN (Single Object Mode)
-🔹 When Used?
-
-When user uploads a single object image.
-
-Example from your screenshot:
-Detected: Cardboard – 95.6% confidence
-
-🔹 Step-by-Step Internal Flow
-
-Function:
-
-run_yolo_cnn(image_path)
-
-Step 1 – Image Load
-
-OpenCV loads image.
-
-Step 2 – YOLO Detection
-
-YOLO detects:
-
-Bounding box
-
-Objectness score
-
-Initial class prediction
-
-Example:
-
-YOLO → food (0.72)
-
-Step 3 – Crop Object
-
-Detected region is cropped using bounding box.
-
-Step 4 – CNN Reclassification
-
-Cropped object sent to custom CNN classifier.
-
-CNN outputs refined class.
-
-Example:
-
-CNN → Cardboard (0.956)
-
-
-CNN overrides YOLO class if more confident.
-
-Step 5 – Draw Final Detection
-
-Bounding box drawn
-
-Label from CNN used
-
-Confidence updated
-
-Step 6 – Return JSON
+```json
 {
   "pipeline": "yolo_cnn",
-  "detections": [
+  "output_image": "path.jpg",
+  "detections":[
     {
-      "label": "Cardboard",
-      "confidence": 0.956,
-      "bbox": [x1, y1, x2, y2],
-      "source": "CNN"
+      "label":"Organic",
+      "confidence":0.657,
+      "bbox":[x1,y1,x2,y2],
+      "yolo_class":"food",
+      "yolo_conf":0.72,
+      "source":"CNN",
+      "area":12345
     }
   ],
-  "total_objects": 1
+  "total_objects":1
 }
+```
 
-🔹 WHY YOLO + CNN?
+### 2. Dual‑YOLO  
+Tailored for garbage piles and cluttered scenes.
 
-Say this clearly:
+- `run_dual_yolo(image_path)`  
+  First YOLO makes an initial pass; second YOLO refines or filters predictions.  
+  Improves detection in overlapping/large‑scale debris.
 
-“YOLO performs fast object detection, but CNN performs more fine-grained classification. Therefore, YOLO localizes the object and CNN improves classification accuracy.”
+---
 
-🔹 Why This Is Powerful
+## 📡 Frontend Features
 
-Reduces classification errors
+- **Upload or live camera stream**  
+- **Detection page** – choose pipeline, view annotated result  
+- **Results page** – class, confidence, bounding boxes, model info  
+- **Dashboard** – totals, most common class, avg confidence, heatmap (Leaflet + OSM), distribution chart (Chart.js)  
+- **Guide page** – waste categories, disposal instructions, gamified “Eco XP”  
 
-Improves fine-grained discrimination
+---
 
-Especially useful for visually similar materials
+## 📊 Model Performance (example metrics)
 
-🔥 PIPELINE 2: YOLO + YOLO (Dual YOLO) – Garbage Pile Mode
+- Precision: **93.76 %**  
+- Recall: **92.26 %**  
+- mAP@0.5: **96.88 %**  
+- mAP@0.5‑0.95: **78.91 %**
 
-Now from your cardboard pile image.
+_loss decreased steadily over training with no major overfitting._
 
-We see multiple bounding boxes detected.
+---
 
-🔹 When Used?
+## 🛠 Training & Evaluation
 
-For:
+- **Classifier training**: train.py  
+- **Inference scripts**: infer.py, `yolo_cnn_infer.py`, `dual_yolo_infer.py`
+- **Dataset preparation**: prepare_dataset.py, `split_dataset.py`  
+- Data distribution checks: check_distribution.py  
+- Metrics exported to final_metrics.json and `results.csv`.
 
-Garbage pile
+---
 
-Multiple overlapping objects
+## 📝 Usage Example
 
-Complex scenes
+1. Start backend:
 
-🔹 Step-by-Step Flow
+   ```bash
+   cd backend
+   flask run
+   ```
 
-Function:
+2. Visit `http://localhost:3000` (frontend dev server)  
+3. Upload an image or enable webcam  
+4. Select pipeline → view results → dashboard updates automatically  
 
-run_dual_yolo(image_path)
+---
 
-Step 1 – First YOLO Detection
+## 💡 Notes & Tips
 
-YOLO detects all potential objects.
+- Add new waste categories by updating `yolo/*.yaml` and retraining model.  
+- Swap models by replacing `.pt` weight files and restarting backend.  
+- Frontend environment variables: `VITE_API_URL` for backend base URL.
 
-In your image:
-Multiple "CARDBOARD" boxes detected.
+---
 
-Step 2 – Second YOLO Refinement
+## 🧩 Contribution & Extension
 
-Second YOLO model:
+- New pipelines can be added under inference.  
+- Extend dashboard by editing components or adding new routes.  
+- Use the notebooks to explore data or develop custom augmentation.
 
-Refines classification
+---
 
-Filters false positives
+## 📄 License & Credits
 
-Improves robustness in clutter
+*Include license details here (e.g., MIT) and acknowledge any datasets or third‑party tools used.*
 
-Step 3 – Non-Maximum Suppression
+---
 
-Overlapping boxes removed.
-
-Highest confidence retained.
-
-Step 4 – Final Annotated Output
-
-Multiple bounding boxes drawn.
-
-Example from your image:
-
-Cardboard 85.1%
-
-Cardboard 76.4%
-
-Cardboard 59.4%
-
-etc.
-
-Step 5 – Return JSON
-{
-  "pipeline": "dual_yolo",
-  "detections": [...],
-  "total_objects": 8
-}
-
-🔹 WHY Dual YOLO?
-
-Say confidently:
-
-“In cluttered environments, single-stage detection may produce noisy predictions. The second YOLO acts as a refinement stage, improving detection stability and reducing false positives.”
-
-🧠 DIFFERENCE BETWEEN BOTH PIPELINES
-Feature	YOLO + CNN	YOLO + YOLO
-Use Case	Single Object	Garbage Pile
-Focus	Classification refinement	Multi-object robustness
-Cropping	Yes	No
-Second Model	CNN classifier	Another YOLO detector
-Speed	Slightly slower	Still real-time
-Accuracy	High class precision	High detection robustness
+💬 **Any questions or ideas?** Just open an issue or drop a message – let’s make smart waste management smarter!
